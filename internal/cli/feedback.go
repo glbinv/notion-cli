@@ -67,7 +67,7 @@ func appendFeedback(entry FeedbackEntry) error {
 	if err != nil {
 		return fmt.Errorf("opening feedback ledger: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	return json.NewEncoder(f).Encode(entry)
 }
 
@@ -87,7 +87,7 @@ func postFeedback(url string, entry FeedbackEntry) error {
 	if err != nil {
 		return fmt.Errorf("posting feedback: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("feedback endpoint returned %s", resp.Status)
 	}
@@ -143,7 +143,7 @@ maintainer sees it.`,
 			upstreamResult := map[string]any{"sent": false}
 			if endpoint := feedbackEndpoint(); endpoint != "" && (send || feedbackAutoSend()) {
 				if err := postFeedback(endpoint, entry); err != nil {
-					fmt.Fprintf(cmd.ErrOrStderr(), "warning: feedback upstream POST failed: %v\n", err)
+					_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "warning: feedback upstream POST failed: %v\n", err)
 					upstreamResult["sent"] = false
 					upstreamResult["error"] = err.Error()
 				} else {
@@ -160,14 +160,14 @@ maintainer sees it.`,
 					"entry":     entry,
 				}, flags)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "feedback recorded locally (%d chars%s)\n", len(text), func() string {
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "feedback recorded locally (%d chars%s)\n", len(text), func() string {
 				if truncated {
 					return ", truncated"
 				}
 				return ""
 			}())
 			if sent, _ := upstreamResult["sent"].(bool); sent {
-				fmt.Fprintf(cmd.OutOrStdout(), "upstream POST: %v\n", upstreamResult["endpoint"])
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "upstream POST: %v\n", upstreamResult["endpoint"])
 			}
 			return nil
 		},

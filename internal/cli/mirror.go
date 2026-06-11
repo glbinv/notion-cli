@@ -86,7 +86,7 @@ func newFormatMirrorCmd(flags *rootFlags) *cobra.Command {
 			if err != nil {
 				return configErr(err)
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			page, err := c.Get(cmd.Context(), replacePathParam("/v1/pages/{page_id}", "page_id", args[0]), nil)
 			if err != nil {
@@ -97,8 +97,12 @@ func newFormatMirrorCmd(flags *rootFlags) *cobra.Command {
 				pageID, title, url, time.Now().UTC().Format(time.RFC3339)); err != nil {
 				return configErr(err)
 			}
-			db.Exec(`DELETE FROM blocks WHERE page_id=?`, pageID)
-			db.Exec(`DELETE FROM rich_text WHERE page_id=?`, pageID)
+			if _, err := db.Exec(`DELETE FROM blocks WHERE page_id=?`, pageID); err != nil {
+				return configErr(err)
+			}
+			if _, err := db.Exec(`DELETE FROM rich_text WHERE page_id=?`, pageID); err != nil {
+				return configErr(err)
+			}
 
 			count, err := mirrorWalk(cmd.Context(), c, db, pageID, pageID, 0)
 			if err != nil {
@@ -152,8 +156,10 @@ func mirrorWalk(ctx context.Context, c interface {
 			if hasChildren {
 				hc = 1
 			}
-			db.Exec(`INSERT OR REPLACE INTO blocks (id,page_id,parent_id,type,position,depth,color,plain_text,has_children,last_edited_time) VALUES (?,?,?,?,?,?,?,?,?,?)`,
-				id, pageID, parentID, btype, pos, depth, color, plain, hc, lastEdited)
+			if _, err := db.Exec(`INSERT OR REPLACE INTO blocks (id,page_id,parent_id,type,position,depth,color,plain_text,has_children,last_edited_time) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+				id, pageID, parentID, btype, pos, depth, color, plain, hc, lastEdited); err != nil {
+				return count, err
+			}
 			insertRichText(db, id, pageID, rich)
 			count++
 			pos++
@@ -187,7 +193,7 @@ func insertRichText(db *sql.DB, blockID, pageID string, rich []any) {
 			}
 		}
 		href, _ := run["href"].(string)
-		db.Exec(`INSERT INTO rich_text (block_id,page_id,position,content,color,bold,italic,strikethrough,underline,code,href) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+		_, _ = db.Exec(`INSERT INTO rich_text (block_id,page_id,position,content,color,bold,italic,strikethrough,underline,code,href) VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
 			blockID, pageID, i, content, annStr(ann, "color", "default"),
 			annBool(ann, "bold"), annBool(ann, "italic"), annBool(ann, "strikethrough"),
 			annBool(ann, "underline"), annBool(ann, "code"), href)
@@ -287,7 +293,7 @@ blocks, rich_text. Views: colored_text, block_palette.`, "\n"),
 			if err != nil {
 				return configErr(fmt.Errorf("opening mirror %s: %w", dbPath, err))
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			if schema {
 				return runSQL(cmd, flags, db, `SELECT type,name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY type,name`)
@@ -308,7 +314,7 @@ func runSQL(cmd *cobra.Command, flags *rootFlags, db *sql.DB, query string) erro
 	if err != nil {
 		return usageErr(fmt.Errorf("query failed: %w", err))
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	cols, err := rows.Columns()
 	if err != nil {
 		return apiErr(err)
@@ -348,7 +354,7 @@ func openMirror(path string) (*sql.DB, error) {
 		return nil, err
 	}
 	if _, err := db.Exec(mirrorSchema); err != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, err
 	}
 	return db, nil

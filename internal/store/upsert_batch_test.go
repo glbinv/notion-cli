@@ -28,7 +28,7 @@ func TestStoreWrite_NoSQLITE_BUSY_HighConcurrency(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	const goroutines = 16
 	const itemsPerBatch = 5
@@ -96,7 +96,7 @@ func TestStoreWrite_PanicReleasesLock(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// Trigger panic by passing a nil *Store method receiver indirectly:
 	// we call UpsertBatch with malformed JSON that survives Unmarshal
@@ -106,7 +106,7 @@ func TestStoreWrite_PanicReleasesLock(t *testing.T) {
 	// unlocking, then assert subsequent calls succeed.
 	func() {
 		defer func() {
-			recover()
+			_ = recover()
 		}()
 		s.writeMu.Lock()
 		defer s.writeMu.Unlock()
@@ -137,7 +137,7 @@ func TestUpsertBatch_TemplatedIDFieldOverrideWins(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// Inject a runtime override for a synthetic resource. Item carries
 	// no generic-fallback field (no id/name/uuid/...) — only a custom
@@ -182,7 +182,7 @@ func TestUpsertBatch_GenericFallbackList(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	for _, key := range []string{"id", "ID", "gid", "sid", "uid", "uuid", "guid", "name", "slug", "key", "code"} {
 		t.Run(key, func(t *testing.T) {
@@ -238,7 +238,7 @@ func TestUpsertBatch_ExtractFailuresReturnedForPerItemMisses(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	items := []json.RawMessage{
 		json.RawMessage(`{"id": "ok-1"}`),
@@ -269,7 +269,7 @@ func TestUpsertBatch_PopulatesBlocksTable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	items := []json.RawMessage{
 		json.RawMessage(`{"id": "test-001"}`),
@@ -311,7 +311,7 @@ func TestUpsertBatch_PopulatesChildrenTable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	items := []json.RawMessage{
 		json.RawMessage(`{"id": "test-001"}`),
@@ -353,7 +353,7 @@ func TestUpsertBatch_PopulatesPagesTable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	items := []json.RawMessage{
 		json.RawMessage(`{"id": "test-001"}`),
@@ -395,7 +395,7 @@ func TestUpsertBatch_PopulatesPropertiesTable(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	items := []json.RawMessage{
 		json.RawMessage(`{"id": "test-001", "pages_id": "test-parent-001"}`),
@@ -439,7 +439,7 @@ func TestUpsertBatch_TypedFailureDoesNotStrandPropertiesGeneric(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// Items deliberately omit "pages_id" so the typed NOT NULL
 	// constraint fires.

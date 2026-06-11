@@ -15,8 +15,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/notionmd"
+
+	"github.com/spf13/cobra"
 )
 
 func newFormatCmd(flags *rootFlags) *cobra.Command {
@@ -466,7 +467,7 @@ func newFormatReadPageCmd(flags *rootFlags) *cobra.Command {
 					"block_count": len(tree), "markdown": md,
 				})
 			}
-			fmt.Fprint(cmd.OutOrStdout(), md)
+			_, _ = fmt.Fprint(cmd.OutOrStdout(), md)
 			return nil
 		},
 	}

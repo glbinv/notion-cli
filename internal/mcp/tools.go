@@ -15,14 +15,15 @@ import (
 	"strings"
 	"time"
 
-	mcplib "github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
 	"notion-pp-cli/internal/cli"
 	"notion-pp-cli/internal/client"
 	"notion-pp-cli/internal/cliutil"
 	"notion-pp-cli/internal/config"
 	"notion-pp-cli/internal/mcp/cobratree"
 	"notion-pp-cli/internal/store"
+
+	mcplib "github.com/mark3labs/mcp-go/mcp"
+	"github.com/mark3labs/mcp-go/server"
 )
 
 // RegisterTools registers all API operations as MCP tools.
@@ -793,7 +794,7 @@ func handleSearch(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.Call
 	if err != nil {
 		return mcplib.NewToolResultError(fmt.Sprintf("opening database: %v", err)), nil
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	results, err := db.Search(query, limit)
 	if err != nil {
@@ -873,13 +874,13 @@ func handleSQL(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToo
 	if err != nil {
 		return mcplib.NewToolResultError(fmt.Sprintf("opening database: %v", err)), nil
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	rows, err := db.Query(query)
 	if err != nil {
 		return mcplib.NewToolResultError(fmt.Sprintf("query failed: %v", err)), nil
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	cols, _ := rows.Columns()
 	var results []map[string]any
@@ -889,7 +890,9 @@ func handleSQL(ctx context.Context, req mcplib.CallToolRequest) (*mcplib.CallToo
 		for i := range values {
 			ptrs[i] = &values[i]
 		}
-		rows.Scan(ptrs...)
+		if err := rows.Scan(ptrs...); err != nil {
+			return mcplib.NewToolResultError(fmt.Sprintf("scanning row: %v", err)), nil
+		}
 		row := make(map[string]any)
 		for i, col := range cols {
 			row[col] = values[i]

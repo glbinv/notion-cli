@@ -199,7 +199,7 @@ func writeThroughCache(ctx context.Context, resourceType string, data json.RawMe
 	if err != nil {
 		return
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	// Collect items to upsert from various response shapes
 	var items []json.RawMessage
@@ -280,7 +280,7 @@ func writeMutationResponseToStore(ctx context.Context, resourceType string, data
 	if err != nil {
 		return
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	_, _, _ = db.UpsertBatch(resourceType, items)
 }
@@ -379,12 +379,12 @@ func mutationResponseHasID(resourceType string, data json.RawMessage) bool {
 func resolveLocal(ctx context.Context, flags *rootFlags, hintWriter io.Writer, resourceType string, isList bool, path string, params map[string]string, reason string) (json.RawMessage, DataProvenance, error) {
 	db, err := openStoreForRead(ctx, "notion-pp-cli")
 	if err != nil {
-		return nil, DataProvenance{}, fmt.Errorf("opening local database: %w\nRun 'notion-pp-cli sync' first.", err)
+		return nil, DataProvenance{}, fmt.Errorf("opening local database (run 'notion-pp-cli sync' first): %w", err)
 	}
 	if db == nil {
 		return nil, DataProvenance{}, fmt.Errorf("no local data. Run 'notion-pp-cli sync' first")
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	if flags != nil {
 		emitSyncHints(hintWriter, db, resourceType, flags.maxAge)

@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/store"
+
+	"github.com/spf13/cobra"
 )
 
 // isNilOrEmpty checks whether a JSON object has nil or empty values for
@@ -135,7 +136,7 @@ In local mode: searches locally synced data only.`,
 					return classifyAPIError(getErr, flags)
 				}
 				// auto mode + network error: fall through to local FTS
-				fmt.Fprintf(cmd.ErrOrStderr(), "API unreachable, falling back to local search.\n")
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "API unreachable, falling back to local search.\n")
 			}
 
 			// Local FTS search
@@ -145,9 +146,9 @@ In local mode: searches locally synced data only.`,
 
 			db, err := store.OpenWithContext(cmd.Context(), dbPath)
 			if err != nil {
-				return fmt.Errorf("opening local database: %w\nRun 'notion-pp-cli sync' first to populate the local database.", err)
+				return fmt.Errorf("opening local database (run 'notion-pp-cli sync' first to populate the local database): %w", err)
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			maybeEmitSyncHints(cmd, db, resourceType, flags.maxAge)
 
@@ -236,13 +237,13 @@ func outputSearchResults(cmd *cobra.Command, flags *rootFlags, results []json.Ra
 	}
 
 	if len(results) == 0 {
-		fmt.Fprintf(cmd.ErrOrStderr(), "No results (source: %s)\n", prov.Source)
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "No results (source: %s)\n", prov.Source)
 		return nil
 	}
 
 	printProvenance(cmd, len(results), prov)
 	for _, r := range results {
-		fmt.Fprintln(cmd.OutOrStdout(), string(r))
+		_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(r))
 	}
 	return nil
 }

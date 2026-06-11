@@ -55,11 +55,11 @@ Run 'api <interface>' to see that interface's methods.`,
 						if len(methods) == 0 {
 							return child.Help()
 						}
-						fmt.Fprintf(cmd.OutOrStdout(), "%s — %s\n\nMethods:\n", child.Name(), child.Short)
+						_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s — %s\n\nMethods:\n", child.Name(), child.Short)
 						for _, method := range methods {
-							fmt.Fprintf(cmd.OutOrStdout(), "  %-50s %s\n", child.Name()+" "+method.Name(), method.Short)
+							_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  %-50s %s\n", child.Name()+" "+method.Name(), method.Short)
 						}
-						fmt.Fprintf(cmd.OutOrStdout(), "\nUse '%s-pp-cli %s <method> --help' for details.\n", "notion", child.Name())
+						_, _ = fmt.Fprintf(cmd.OutOrStdout(), "\nUse '%s-pp-cli %s <method> --help' for details.\n", "notion", child.Name())
 						return nil
 					}
 				}
@@ -92,15 +92,15 @@ Run 'api <interface>' to see that interface's methods.`,
 			}
 
 			if len(ifaces) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "No hidden API interfaces found.")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "No hidden API interfaces found.")
 				return nil
 			}
 
-			fmt.Fprintf(cmd.OutOrStdout(), "Available API interfaces (%d):\n\n", len(ifaces))
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Available API interfaces (%d):\n\n", len(ifaces))
 			for _, e := range ifaces {
-				fmt.Fprintf(cmd.OutOrStdout(), "  %-45s %s\n", e.Name, e.Short)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  %-45s %s\n", e.Name, e.Short)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "\nUse '%s-pp-cli api <interface>' to see methods.\n", "notion")
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "\nUse '%s-pp-cli api <interface>' to see methods.\n", "notion")
 			return nil
 		},
 	}

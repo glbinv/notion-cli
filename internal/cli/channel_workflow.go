@@ -8,8 +8,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/store"
+
+	"github.com/spf13/cobra"
 )
 
 func newWorkflowCmd(flags *rootFlags) *cobra.Command {
@@ -54,7 +55,7 @@ and full resync. After archiving, use 'search' for instant full-text search.`,
 			if err != nil {
 				return fmt.Errorf("opening store: %w", err)
 			}
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 
 			resources := []string{}
 			totalSynced := 0
@@ -75,15 +76,15 @@ and full resync. After archiving, use 'search' for instant full-text search.`,
 			for _, resource := range resources {
 				res := syncResource(cmd.Context(), c, s, resource, "", full, 100, false, nil, syncEventWriter)
 				if res.Err != nil {
-					fmt.Fprintf(cmd.ErrOrStderr(), "  %s: error: %v\n", resource, res.Err)
+					_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "  %s: error: %v\n", resource, res.Err)
 					continue
 				}
 				if res.Warn != nil {
-					fmt.Fprintf(cmd.ErrOrStderr(), "  %s: warning: %v\n", resource, res.Warn)
+					_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "  %s: warning: %v\n", resource, res.Warn)
 					continue
 				}
 				totalSynced += res.Count
-				fmt.Fprintf(cmd.ErrOrStderr(), "  %s: %d synced\n", resource, res.Count)
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "  %s: %d synced\n", resource, res.Count)
 			}
 
 			if flags.asJSON {
@@ -97,7 +98,7 @@ and full resync. After archiving, use 'search' for instant full-text search.`,
 				})
 			}
 
-			fmt.Fprintf(cmd.OutOrStdout(), "Archived %d items across %d resources to %s\n", totalSynced, len(resources), dbPath)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Archived %d items across %d resources to %s\n", totalSynced, len(resources), dbPath)
 			return nil
 		},
 	}
@@ -128,7 +129,7 @@ func newWorkflowStatusCmd(flags *rootFlags) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("opening store: %w", err)
 			}
-			defer s.Close()
+			defer func() { _ = s.Close() }()
 
 			status, err := s.Status()
 			if err != nil {
@@ -142,18 +143,18 @@ func newWorkflowStatusCmd(flags *rootFlags) *cobra.Command {
 			}
 
 			if len(status) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "No archived data. Run 'workflow archive' to sync.")
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "No archived data. Run 'workflow archive' to sync.")
 				return nil
 			}
 
-			fmt.Fprintln(cmd.OutOrStdout(), "Archive Status:")
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Archive Status:")
 			total := 0
 			for resource, count := range status {
-				fmt.Fprintf(cmd.OutOrStdout(), "  %-30s %d items\n", resource, count)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  %-30s %d items\n", resource, count)
 				total += count
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "\n  Total: %d items\n", total)
-			fmt.Fprintf(cmd.OutOrStdout(), "  Store: %s\n", dbPath)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "\n  Total: %d items\n", total)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  Store: %s\n", dbPath)
 			return nil
 		},
 	}

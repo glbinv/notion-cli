@@ -11,8 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/store"
+
+	"github.com/spf13/cobra"
 )
 
 type syncHintState struct {
@@ -33,7 +34,7 @@ func emitSyncHints(w io.Writer, db *store.Store, resourceType string, maxAge tim
 		return
 	}
 	if !state.hasState {
-		fmt.Fprintf(w, "hint: local store has not been synced yet. Run 'notion-pp-cli sync' before trusting local results.\n")
+		_, _ = fmt.Fprintf(w, "hint: local store has not been synced yet. Run 'notion-pp-cli sync' before trusting local results.\n")
 		return
 	}
 	if maxAge <= 0 {
@@ -43,7 +44,7 @@ func emitSyncHints(w io.Writer, db *store.Store, resourceType string, maxAge tim
 	if age <= maxAge {
 		return
 	}
-	fmt.Fprintf(w, "hint: local store data is %s old, older than --max-age=%s. Run 'notion-pp-cli sync' to refresh.\n", syncHintRoundAge(age), maxAge)
+	_, _ = fmt.Fprintf(w, "hint: local store data is %s old, older than --max-age=%s. Run 'notion-pp-cli sync' to refresh.\n", syncHintRoundAge(age), maxAge)
 }
 
 func hintIfUnsynced(cmd *cobra.Command, db *store.Store, resourceType string) bool {
@@ -54,7 +55,7 @@ func hintIfUnsynced(cmd *cobra.Command, db *store.Store, resourceType string) bo
 	if err != nil || state.hasState {
 		return false
 	}
-	fmt.Fprintf(cmd.ErrOrStderr(), "hint: local store has not been synced yet. Run 'notion-pp-cli sync' before trusting local results.\n")
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hint: local store has not been synced yet. Run 'notion-pp-cli sync' before trusting local results.\n")
 	return true
 }
 
@@ -70,7 +71,7 @@ func hintIfStale(cmd *cobra.Command, db *store.Store, resourceType string, maxAg
 	if age <= maxAge {
 		return false
 	}
-	fmt.Fprintf(cmd.ErrOrStderr(), "hint: local store data is %s old, older than --max-age=%s. Run 'notion-pp-cli sync' to refresh.\n", syncHintRoundAge(age), maxAge)
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "hint: local store data is %s old, older than --max-age=%s. Run 'notion-pp-cli sync' to refresh.\n", syncHintRoundAge(age), maxAge)
 	return true
 }
 

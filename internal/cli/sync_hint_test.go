@@ -11,8 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/store"
+
+	"github.com/spf13/cobra"
 )
 
 func newSyncHintTestStore(t *testing.T) *store.Store {
@@ -21,7 +22,7 @@ func newSyncHintTestStore(t *testing.T) *store.Store {
 	if err != nil {
 		t.Fatalf("open store: %v", err)
 	}
-	t.Cleanup(func() { db.Close() })
+	t.Cleanup(func() { _ = db.Close() })
 	return db
 }
 

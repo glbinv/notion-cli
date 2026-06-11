@@ -12,9 +12,10 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/client"
 	"notion-pp-cli/internal/config"
+
+	"github.com/spf13/cobra"
 )
 
 var version = "1.0.0"
@@ -288,7 +289,7 @@ func (f *rootFlags) printTable(w *cobra.Command, headers []string, rows [][]stri
 		}
 		header += h
 	}
-	fmt.Fprintln(tw, header)
+	_, _ = fmt.Fprintln(tw, header)
 	for _, row := range rows {
 		line := ""
 		for i, cell := range row {
@@ -297,7 +298,7 @@ func (f *rootFlags) printTable(w *cobra.Command, headers []string, rows [][]stri
 			}
 			line += cell
 		}
-		fmt.Fprintln(tw, line)
+		_, _ = fmt.Fprintln(tw, line)
 	}
 	return tw.Flush()
 }

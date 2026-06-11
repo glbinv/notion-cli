@@ -12,8 +12,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	enetxhttp "github.com/enetx/http"
-	"github.com/enetx/surf"
 	"io"
 	"math"
 	"net/http"
@@ -23,6 +21,9 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	enetxhttp "github.com/enetx/http"
+	"github.com/enetx/surf"
 
 	"notion-pp-cli/internal/cliutil"
 	"notion-pp-cli/internal/config"
@@ -269,9 +270,11 @@ func (c *Client) readCache(path string, params map[string]string) (json.RawMessa
 }
 
 func (c *Client) writeCache(path string, params map[string]string, data json.RawMessage) {
-	os.MkdirAll(c.cacheDir, 0o755)
+	if err := os.MkdirAll(c.cacheDir, 0o755); err != nil {
+		return
+	}
 	cacheFile := filepath.Join(c.cacheDir, c.cacheKey(path, params)+".json")
-	os.WriteFile(cacheFile, []byte(data), 0o644)
+	_ = os.WriteFile(cacheFile, []byte(data), 0o644)
 }
 
 // invalidateCache wholesale-removes the cache directory so the next read
@@ -543,7 +546,7 @@ func (c *Client) doInternal(ctx context.Context, method, path string, params map
 		}
 
 		respBody, err := io.ReadAll(resp.Body)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		if err != nil {
 			return nil, 0, fmt.Errorf("reading response: %w", err)
 		}
@@ -639,7 +642,7 @@ func (c *Client) dryRun(method, targetURL, path string, params map[string]string
 			enc := json.NewEncoder(os.Stderr)
 			enc.SetIndent("  ", "  ")
 			fmt.Fprintf(os.Stderr, "  Body:\n")
-			enc.Encode(pretty)
+			_ = enc.Encode(pretty)
 		}
 	}
 	if authHeader != "" {

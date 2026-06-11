@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
 	"net/url"
 	"notion-pp-cli/internal/client"
@@ -21,6 +20,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/spf13/cobra"
 )
 
 // unresolvedPathKeyRE matches `{key}` placeholders left in a sync path
@@ -129,7 +130,7 @@ Resource scoping:
 			if err != nil {
 				return fmt.Errorf("opening local database: %w", err)
 			}
-			defer db.Close()
+			defer func() { _ = db.Close() }()
 
 			syncEventWriter := cmd.OutOrStdout()
 
@@ -148,7 +149,7 @@ Resource scoping:
 				if humanFriendly {
 					fmt.Fprintln(os.Stderr, "notion-pp-cli sync: no bulk-list endpoints in spec; populate the store via single-fetch commands instead.")
 				} else {
-					fmt.Fprintln(syncEventWriter, `{"event":"sync_warning","reason":"no_bulk_list_endpoints","detail":"no bulk-list endpoints in spec; populate the store via single-fetch commands"}`)
+					_, _ = fmt.Fprintln(syncEventWriter, `{"event":"sync_warning","reason":"no_bulk_list_endpoints","detail":"no bulk-list endpoints in spec; populate the store via single-fetch commands"}`)
 				}
 			}
 
@@ -295,7 +296,7 @@ Resource scoping:
 						totalSynced, totalResources, elapsed.Seconds())
 				}
 			} else {
-				fmt.Fprintf(syncEventWriter, `{"event":"sync_summary","total_records":%d,"resources":%d,"success":%d,"warned":%d,"errored":%d,"duration_ms":%d}`+"\n",
+				_, _ = fmt.Fprintf(syncEventWriter, `{"event":"sync_summary","total_records":%d,"resources":%d,"success":%d,"warned":%d,"errored":%d,"duration_ms":%d}`+"\n",
 					totalSynced, totalResources, successCount, warnCount, errCount, elapsed.Milliseconds())
 			}
 
@@ -328,7 +329,7 @@ Resource scoping:
 			if errCount > 0 && !strict && criticalErrCount == 0 && successCount > 0 {
 				if !humanFriendly {
 					msg := fmt.Sprintf("%d resource(s) failed but exit code is 0 because the new default treats non-critical failures as warnings. Pass --strict to restore the old behavior, or annotate critical resources with x-critical: true. See CHANGELOG.", errCount)
-					fmt.Fprintf(syncEventWriter, `{"event":"sync_warning","reason":"exit_policy_default_changed","errored":%d,"message":"%s"}`+"\n",
+					_, _ = fmt.Fprintf(syncEventWriter, `{"event":"sync_warning","reason":"exit_policy_default_changed","errored":%d,"message":"%s"}`+"\n",
 						errCount, strings.ReplaceAll(msg, `"`, `\"`))
 				} else {
 					fmt.Fprintf(os.Stderr, "warning: %d resource(s) failed but exit code is 0 because the new default treats non-critical failures as warnings. Pass --strict to restore the old behavior, or annotate critical resources with x-critical: true.\n", errCount)
@@ -367,7 +368,7 @@ func syncResource(ctx context.Context, c interface {
 	}
 
 	if !humanFriendly {
-		fmt.Fprintf(syncEvents, `{"event":"sync_start","resource":"%s"}`+"\n", resource)
+		_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_start","resource":"%s"}`+"\n", resource)
 	}
 
 	path, err := syncResourcePath(resource)
@@ -399,7 +400,7 @@ func syncResource(ctx context.Context, c interface {
 				Message:  fmt.Sprintf("path %s requires parent context (%s); resource skipped", path, strings.Join(missingKeys, ", ")),
 			}
 			payloadJSON, _ := json.Marshal(payload)
-			fmt.Fprintf(syncEvents, "%s\n", payloadJSON)
+			_, _ = fmt.Fprintf(syncEvents, "%s\n", payloadJSON)
 		} else {
 			fmt.Fprintf(os.Stderr, "  %s skipped (requires parent context: %s)\n",
 				resource, strings.Join(missingKeys, ", "))
@@ -433,7 +434,7 @@ func syncResource(ctx context.Context, c interface {
 		if humanFriendly {
 			fmt.Fprintf(os.Stderr, "  %s: incremental sync ignored (endpoint declares no temporal filter; falling back to full pagination)\n", resource)
 		} else {
-			fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","reason":"resource_not_incremental","message":"endpoint does not declare a temporal filter parameter; incremental sync has no effect for this resource"}`+"\n", resource)
+			_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","reason":"resource_not_incremental","message":"endpoint does not declare a temporal filter parameter; incremental sync has no effect for this resource"}`+"\n", resource)
 		}
 		effectiveSince = ""
 	}
@@ -480,13 +481,13 @@ func syncResource(ctx context.Context, c interface {
 		if err != nil {
 			if w, ok := isSyncAccessWarning(err); ok {
 				if !humanFriendly {
-					fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","status":%d,"reason":"%s","message":"%s"}`+"\n",
+					_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","status":%d,"reason":"%s","message":"%s"}`+"\n",
 						resource, w.Status, w.Reason, strings.ReplaceAll(w.Message, `"`, `\"`))
 				}
 				return syncResult{Resource: resource, Count: totalCount, Warn: fmt.Errorf("skipped %s: %s", resource, w.Reason), Duration: time.Since(started)}
 			}
 			if !humanFriendly {
-				fmt.Fprintln(syncEvents, syncErrorJSON(resource, "", err))
+				_, _ = fmt.Fprintln(syncEvents, syncErrorJSON(resource, "", err))
 			}
 			return syncResult{Resource: resource, Count: totalCount, Err: fmt.Errorf("fetching %s: %w", resource, err), Duration: time.Since(started)}
 		}
@@ -499,7 +500,7 @@ func syncResource(ctx context.Context, c interface {
 		// sees a clean exit.
 		if isDryRunResponse(data) {
 			if !humanFriendly {
-				fmt.Fprintf(syncEvents, `{"event":"sync_dryrun","resource":"%s"}`+"\n", resource)
+				_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_dryrun","resource":"%s"}`+"\n", resource)
 			}
 			return syncResult{Resource: resource, Count: 0, Duration: time.Since(started)}
 		}
@@ -530,7 +531,7 @@ func syncResource(ctx context.Context, c interface {
 			// Single object response - try to store as-is
 			if err := upsertSingleObject(db, resource, data); err != nil {
 				if !humanFriendly {
-					fmt.Fprintln(syncEvents, syncErrorJSON(resource, "", err))
+					_, _ = fmt.Fprintln(syncEvents, syncErrorJSON(resource, "", err))
 				}
 				return syncResult{Resource: resource, Err: err, Duration: time.Since(started)}
 			}
@@ -552,7 +553,7 @@ func syncResource(ctx context.Context, c interface {
 		stored, extractFailures, err := upsertResourceBatch(db, resource, items)
 		if err != nil {
 			if !humanFriendly {
-				fmt.Fprintln(syncEvents, syncErrorJSON(resource, "", err))
+				_, _ = fmt.Fprintln(syncEvents, syncErrorJSON(resource, "", err))
 			}
 			return syncResult{Resource: resource, Count: totalCount, Err: fmt.Errorf("upserting batch for %s: %w", resource, err), Duration: time.Since(started)}
 		}
@@ -569,7 +570,7 @@ func syncResource(ctx context.Context, c interface {
 			if humanFriendly {
 				fmt.Fprintf(os.Stderr, "warning: %s returned %d items but stored 0 — the local store will be empty for this resource. Likely cause: scalar item shape rather than objects with extractable IDs.\n", resource, len(items))
 			} else {
-				fmt.Fprintf(syncEvents, `{"event":"sync_anomaly","resource":"%s","consumed":%d,"stored":0,"reason":"all_items_failed_id_extraction"}`+"\n", resource, len(items))
+				_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_anomaly","resource":"%s","consumed":%d,"stored":0,"reason":"all_items_failed_id_extraction"}`+"\n", resource, len(items))
 			}
 			anomalyEmitted = true
 		} else if extractFailures > 0 && !anomalyEmitted {
@@ -580,7 +581,7 @@ func syncResource(ctx context.Context, c interface {
 			if humanFriendly {
 				fmt.Fprintf(os.Stderr, "\nwarning: %s had %d item(s) on this page with no extractable primary key — those rows were dropped silently. Annotate the spec with x-resource-id to fix.\n", resource, extractFailures)
 			} else {
-				fmt.Fprintf(syncEvents, `{"event":"sync_anomaly","resource":"%s","consumed":%d,"stored":%d,"count":%d,"reason":"primary_key_unresolved"}`+"\n", resource, len(items), stored, extractFailures)
+				_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_anomaly","resource":"%s","consumed":%d,"stored":%d,"count":%d,"reason":"primary_key_unresolved"}`+"\n", resource, len(items), stored, extractFailures)
 			}
 			anomalyEmitted = true
 		}
@@ -598,9 +599,9 @@ func syncResource(ctx context.Context, c interface {
 			}
 		} else {
 			if currentRate > 0 {
-				fmt.Fprintf(syncEvents, `{"event":"sync_progress","resource":"%s","fetched":%d,"rate_rps":%.1f}`+"\n", resource, atomic.LoadInt64(&progressCount), currentRate)
+				_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_progress","resource":"%s","fetched":%d,"rate_rps":%.1f}`+"\n", resource, atomic.LoadInt64(&progressCount), currentRate)
 			} else {
-				fmt.Fprintf(syncEvents, `{"event":"sync_progress","resource":"%s","fetched":%d}`+"\n", resource, atomic.LoadInt64(&progressCount))
+				_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_progress","resource":"%s","fetched":%d}`+"\n", resource, atomic.LoadInt64(&progressCount))
 			}
 		}
 
@@ -616,7 +617,7 @@ func syncResource(ctx context.Context, c interface {
 				if humanFriendly {
 					fmt.Fprintf(os.Stderr, "\n  %s: reached --max-pages limit (%d pages, %d items)\n", resource, maxPages, totalCount)
 				} else {
-					fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","reason":"max_pages_cap_hit","message":"reached --max-pages cap of %d; data may be truncated. Re-run with --max-pages 0 (unlimited) or higher to verify."}`+"\n", resource, maxPages)
+					_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","reason":"max_pages_cap_hit","message":"reached --max-pages cap of %d; data may be truncated. Re-run with --max-pages 0 (unlimited) or higher to verify."}`+"\n", resource, maxPages)
 				}
 			}
 			break
@@ -632,7 +633,7 @@ func syncResource(ctx context.Context, c interface {
 			if humanFriendly {
 				fmt.Fprintf(os.Stderr, "\n  %s: API returned the same next cursor across two pages; aborting to prevent budget waste.\n", resource)
 			} else {
-				fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","reason":"stuck_pagination","message":"API returned the same next cursor across two pages for resource %s; aborting to prevent budget waste."}`+"\n", resource, resource)
+				_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_warning","resource":"%s","reason":"stuck_pagination","message":"API returned the same next cursor across two pages for resource %s; aborting to prevent budget waste."}`+"\n", resource, resource)
 			}
 			break
 		}
@@ -681,12 +682,12 @@ func syncResource(ctx context.Context, c interface {
 		if humanFriendly {
 			fmt.Fprintf(os.Stderr, "\nwarning: %s consumed %d items, extracted %d primary keys, but stored 0 rows — extraction succeeded yet nothing landed. Investigate FTS triggers / transaction rollback / encoding.\n", resource, consumedTotal, consumedTotal-extractFailureTotal)
 		} else {
-			fmt.Fprintf(syncEvents, `{"event":"sync_anomaly","resource":"%s","consumed":%d,"stored":0,"extract_failures":%d,"reason":"stored_count_zero_after_extraction"}`+"\n", resource, consumedTotal, extractFailureTotal)
+			_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_anomaly","resource":"%s","consumed":%d,"stored":0,"extract_failures":%d,"reason":"stored_count_zero_after_extraction"}`+"\n", resource, consumedTotal, extractFailureTotal)
 		}
 	}
 
 	if !humanFriendly {
-		fmt.Fprintf(syncEvents, `{"event":"sync_complete","resource":"%s","total":%d,"duration_ms":%d}`+"\n", resource, totalCount, time.Since(started).Milliseconds())
+		_, _ = fmt.Fprintf(syncEvents, `{"event":"sync_complete","resource":"%s","total":%d,"duration_ms":%d}`+"\n", resource, totalCount, time.Since(started).Milliseconds())
 	}
 
 	return syncResult{Resource: resource, Count: totalCount, Duration: time.Since(started)}

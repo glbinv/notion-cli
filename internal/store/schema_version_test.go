@@ -25,7 +25,7 @@ func TestSchemaVersion_StampedOnFreshDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open fresh db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	v, err := s.SchemaVersion()
 	if err != nil {
@@ -53,13 +53,13 @@ func TestSchemaVersion_StampExistingZeroDB(t *testing.T) {
 	if _, err := raw.Exec(`PRAGMA user_version = 0`); err != nil {
 		t.Fatalf("stamp zero: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	s, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("open pre-gate db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	v, err := s.SchemaVersion()
 	if err != nil {
@@ -84,7 +84,7 @@ func TestSchemaVersion_RefusesNewerDB(t *testing.T) {
 	if _, err := raw.Exec(`PRAGMA user_version = 999`); err != nil {
 		t.Fatalf("stamp future version: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	_, err = Open(dbPath)
 	if err == nil {
@@ -117,7 +117,7 @@ func TestMigrate_ConcurrentFreshDB(t *testing.T) {
 				errs <- err
 				return
 			}
-			s.Close()
+			_ = s.Close()
 		}()
 	}
 	wg.Wait()
@@ -208,7 +208,7 @@ func TestMigrate_RejectsNewerDBImmediately(t *testing.T) {
 	if _, err := raw.Exec(`PRAGMA user_version = 999`); err != nil {
 		t.Fatalf("stamp future version: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	defer holdWriteLock(t, dbPath)()
 
@@ -237,13 +237,13 @@ func TestSchemaVersion_ReopenIsIdempotent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("first open: %v", err)
 	}
-	s1.Close()
+	_ = s1.Close()
 
 	s2, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("second open: %v", err)
 	}
-	defer s2.Close()
+	defer func() { _ = s2.Close() }()
 
 	v, err := s2.SchemaVersion()
 	if err != nil {
@@ -260,7 +260,7 @@ func TestResources_CompositeKeyPreservesOverlappingIDs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	if err := s.Upsert("biz", "shared", []byte(`{"kind":"biz","name":"Pinky restaurant"}`)); err != nil {
 		t.Fatalf("upsert biz: %v", err)
@@ -310,7 +310,7 @@ func TestGet_MissingRowReturnsErrNoRows(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	data, err := s.Get("missing_type", "missing_id")
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -346,34 +346,34 @@ func TestMigrate_ResourcesCompositeKeyUpgrade(t *testing.T) {
 		synced_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("create v1 resources: %v", err)
 	}
 	if _, err := raw.Exec(`CREATE VIRTUAL TABLE resources_fts USING fts5(
 		id, resource_type, content, tokenize='porter unicode61'
 	)`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("create v1 resources_fts: %v", err)
 	}
 	if _, err := raw.Exec(`INSERT INTO resources (id, resource_type, data) VALUES ('shared', 'biz', '{"kind":"biz","name":"legacy restaurant"}')`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("insert v1 resource: %v", err)
 	}
 	if _, err := raw.Exec(`INSERT INTO resources_fts (rowid, id, resource_type, content) VALUES (1, 'shared', 'biz', '{"kind":"biz","name":"legacy restaurant"}')`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("insert v1 fts row: %v", err)
 	}
 	if _, err := raw.Exec(`PRAGMA user_version = 1`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("stamp v1: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	s, err := Open(dbPath)
 	if err != nil {
 		t.Fatalf("open upgraded db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	v, err := s.SchemaVersion()
 	if err != nil {
@@ -387,7 +387,7 @@ func TestMigrate_ResourcesCompositeKeyUpgrade(t *testing.T) {
 	if err != nil {
 		t.Fatalf("table_info resources: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	pk := map[string]int{}
 	for rows.Next() {
@@ -450,13 +450,13 @@ func TestOpenReadOnly_RejectsWrites(t *testing.T) {
 	if _, err := rw.DB().Exec(`INSERT INTO resources (id, resource_type, data) VALUES ('seed', 'thing', '{}')`); err != nil {
 		t.Fatalf("seed insert: %v", err)
 	}
-	rw.Close()
+	_ = rw.Close()
 
 	ro, err := OpenReadOnly(dbPath)
 	if err != nil {
 		t.Fatalf("open read-only: %v", err)
 	}
-	defer ro.Close()
+	defer func() { _ = ro.Close() }()
 
 	writes := []struct {
 		name string
@@ -509,10 +509,10 @@ func TestMigrate_AddsColumnsOnUpgrade_Blocks(t *testing.T) {
 		data JSON NOT NULL,
 		synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("create old table: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	// Opening with the new binary must run CREATE INDEX statements without
 	// erroring on missing generated columns.
@@ -520,14 +520,14 @@ func TestMigrate_AddsColumnsOnUpgrade_Blocks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open upgraded db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// The migration must have added every generated column.
 	rows, err := s.DB().Query(`PRAGMA table_info("blocks")`)
 	if err != nil {
 		t.Fatalf("table_info: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	hasColumn := make(map[string]bool)
 	for rows.Next() {
@@ -576,10 +576,10 @@ func TestMigrate_AddsColumnsOnUpgrade_Children(t *testing.T) {
 		data JSON NOT NULL,
 		synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("create old table: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	// Opening with the new binary must run CREATE INDEX statements without
 	// erroring on missing generated columns.
@@ -587,14 +587,14 @@ func TestMigrate_AddsColumnsOnUpgrade_Children(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open upgraded db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// The migration must have added every generated column.
 	rows, err := s.DB().Query(`PRAGMA table_info("children")`)
 	if err != nil {
 		t.Fatalf("table_info: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	hasColumn := make(map[string]bool)
 	for rows.Next() {
@@ -640,10 +640,10 @@ func TestMigrate_AddsColumnsOnUpgrade_Pages(t *testing.T) {
 		data JSON NOT NULL,
 		synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("create old table: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	// Opening with the new binary must run CREATE INDEX statements without
 	// erroring on missing generated columns.
@@ -651,14 +651,14 @@ func TestMigrate_AddsColumnsOnUpgrade_Pages(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open upgraded db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// The migration must have added every generated column.
 	rows, err := s.DB().Query(`PRAGMA table_info("pages")`)
 	if err != nil {
 		t.Fatalf("table_info: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	hasColumn := make(map[string]bool)
 	for rows.Next() {
@@ -705,10 +705,10 @@ func TestMigrate_AddsColumnsOnUpgrade_Properties(t *testing.T) {
 		data JSON NOT NULL,
 		synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("create old table: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	// Opening with the new binary must run CREATE INDEX statements without
 	// erroring on missing generated columns.
@@ -716,14 +716,14 @@ func TestMigrate_AddsColumnsOnUpgrade_Properties(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open upgraded db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// The migration must have added every generated column.
 	rows, err := s.DB().Query(`PRAGMA table_info("properties")`)
 	if err != nil {
 		t.Fatalf("table_info: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	hasColumn := make(map[string]bool)
 	for rows.Next() {
@@ -767,10 +767,10 @@ func TestMigrate_AddsColumnsOnUpgrade_SyncState(t *testing.T) {
 		data JSON NOT NULL,
 		synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`); err != nil {
-		raw.Close()
+		_ = raw.Close()
 		t.Fatalf("create old table: %v", err)
 	}
-	raw.Close()
+	_ = raw.Close()
 
 	// Opening with the new binary must run CREATE INDEX statements without
 	// erroring on missing generated columns.
@@ -778,14 +778,14 @@ func TestMigrate_AddsColumnsOnUpgrade_SyncState(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open upgraded db: %v", err)
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	// The migration must have added every generated column.
 	rows, err := s.DB().Query(`PRAGMA table_info("sync_state")`)
 	if err != nil {
 		t.Fatalf("table_info: %v", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	hasColumn := make(map[string]bool)
 	for rows.Next() {

@@ -9,8 +9,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mark3labs/mcp-go/server"
 	mcptools "notion-pp-cli/internal/mcp"
+
+	"github.com/mark3labs/mcp-go/server"
 )
 
 // Transport selection order: --transport flag, then PP_MCP_TRANSPORT env,

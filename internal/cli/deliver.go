@@ -106,7 +106,7 @@ func deliverWebhook(url string, body []byte, compact bool) error {
 	if err != nil {
 		return fmt.Errorf("posting to webhook: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("webhook returned %s", resp.Status)
 	}

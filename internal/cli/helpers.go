@@ -9,8 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"io"
 	"net/url"
 	"notion-pp-cli/internal/client"
@@ -24,6 +22,9 @@ import (
 	"text/tabwriter"
 	"time"
 	"unicode"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 var As = errors.As
@@ -499,12 +500,12 @@ func classifyAPIError(err error, flags *rootFlags) error {
 	case strings.Contains(msg, "HTTP 401"):
 		return authErr(fmt.Errorf("%w\nhint: check your token. Set it with: notion-pp-cli auth set-token <token>"+
 			"\n      or: export NOTION_BEARER_AUTH=<your-token>"+
-			"\n      Run 'notion-pp-cli doctor' to check auth status.", err))
+			"\n      Run 'notion-pp-cli doctor' to check auth status", err))
 	case strings.Contains(msg, "HTTP 403"):
 		return authErr(fmt.Errorf("%w\nhint: permission denied. Your credentials are valid but lack access to this resource."+
 			"\n      Check that your API key has the required permissions."+
 			"\n      Set it with: export NOTION_BEARER_AUTH=<your-key>"+
-			"\n      Run 'notion-pp-cli doctor' to check auth status.", err))
+			"\n      Run 'notion-pp-cli doctor' to check auth status", err))
 	case strings.Contains(msg, "HTTP 404"):
 		return notFoundErr(fmt.Errorf("%w\nhint: resource not found. Run the 'list' command to see available items", err))
 	case strings.Contains(msg, "HTTP 429"):
@@ -1114,7 +1115,7 @@ func printCSV(w io.Writer, data json.RawMessage) error {
 	var items []map[string]any
 	if err := json.Unmarshal(data, &items); err != nil || len(items) == 0 {
 		// Single object or empty - just print as JSON
-		fmt.Fprintln(w, string(data))
+		_, _ = fmt.Fprintln(w, string(data))
 		return nil
 	}
 	// Collect all keys for header
@@ -1130,7 +1131,7 @@ func printCSV(w io.Writer, data json.RawMessage) error {
 	}
 	sort.Strings(keys)
 	// Header
-	fmt.Fprintln(w, strings.Join(keys, ","))
+	_, _ = fmt.Fprintln(w, strings.Join(keys, ","))
 	// Rows
 	for _, item := range items {
 		var vals []string
@@ -1151,7 +1152,7 @@ func printCSV(w io.Writer, data json.RawMessage) error {
 				vals = append(vals, s)
 			}
 		}
-		fmt.Fprintln(w, strings.Join(vals, ","))
+		_, _ = fmt.Fprintln(w, strings.Join(vals, ","))
 	}
 	return nil
 }
@@ -1190,7 +1191,7 @@ func printOutput(w io.Writer, data json.RawMessage, asJSON bool) error {
 	}
 
 	// Fallback: print raw
-	fmt.Fprintln(w, string(data))
+	_, _ = fmt.Fprintln(w, string(data))
 	return nil
 }
 
@@ -1312,9 +1313,9 @@ func printAutoTable(w io.Writer, items []map[string]any) error {
 		upperHeaders[i] = bold(strings.ToUpper(h))
 	}
 
-	fmt.Fprintln(tw, strings.Join(upperHeaders, "\t"))
+	_, _ = fmt.Fprintln(tw, strings.Join(upperHeaders, "\t"))
 	for _, row := range rows {
-		fmt.Fprintln(tw, strings.Join(row, "\t"))
+		_, _ = fmt.Fprintln(tw, strings.Join(row, "\t"))
 	}
 	return tw.Flush()
 }
@@ -1342,10 +1343,6 @@ func prioritizeFields(item map[string]any, includeComplex bool) []string {
 	// "BuildingName" → last segment "name" → tier 0... but we want to avoid this.
 	// Solution: exact match on the full lowered name OR suffix segment match,
 	// with a penalty for compound names that have a non-identity prefix.
-	type pattern struct {
-		word string
-		tier int
-	}
 	// Exact matches (full field name, case-insensitive) — highest confidence
 	exactMatches := map[string]int{
 		"id": 0, "name": 0, "title": 0, "slug": 0, "key": 0,
@@ -1478,7 +1475,7 @@ func printAutoCards(w io.Writer, items []map[string]any) error {
 
 	for i, item := range items {
 		if i > 0 {
-			fmt.Fprintln(w)
+			_, _ = fmt.Fprintln(w)
 		}
 
 		// Card header: use first priority field as the card title
@@ -1486,12 +1483,12 @@ func printAutoCards(w io.Writer, items []map[string]any) error {
 		if len(headers) > 1 {
 			secondVal := formatCellValue(item[headers[1]])
 			if secondVal != "" {
-				fmt.Fprintf(w, "%s %s — %s\n", bold(strings.ToUpper(headers[0])), titleVal, secondVal)
+				_, _ = fmt.Fprintf(w, "%s %s — %s\n", bold(strings.ToUpper(headers[0])), titleVal, secondVal)
 			} else {
-				fmt.Fprintf(w, "%s %s\n", bold(strings.ToUpper(headers[0])), titleVal)
+				_, _ = fmt.Fprintf(w, "%s %s\n", bold(strings.ToUpper(headers[0])), titleVal)
 			}
 		} else {
-			fmt.Fprintf(w, "%s %s\n", bold(strings.ToUpper(headers[0])), titleVal)
+			_, _ = fmt.Fprintf(w, "%s %s\n", bold(strings.ToUpper(headers[0])), titleVal)
 		}
 
 		// Remaining fields indented — skip empty, zero, and false values
@@ -1502,9 +1499,9 @@ func printAutoCards(w io.Writer, items []map[string]any) error {
 			}
 			// Multi-line values (nested arrays) start with \n
 			if strings.HasPrefix(v, "\n") {
-				fmt.Fprintf(w, "  %s:%s\n", h, v)
+				_, _ = fmt.Fprintf(w, "  %s:%s\n", h, v)
 			} else {
-				fmt.Fprintf(w, "  %-*s  %s\n", maxLen, h+":", v)
+				_, _ = fmt.Fprintf(w, "  %-*s  %s\n", maxLen, h+":", v)
 			}
 		}
 	}
@@ -1671,7 +1668,7 @@ func printProvenance(cmd *cobra.Command, count int, prov DataProvenance) {
 		return
 	}
 	if prov.Source == "live" {
-		fmt.Fprintf(cmd.ErrOrStderr(), "%d results (live)\n", count)
+		_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "%d results (live)\n", count)
 		return
 	}
 	age := "unknown"
@@ -1692,7 +1689,7 @@ func printProvenance(cmd *cobra.Command, count int, prov DataProvenance) {
 	if prov.Reason == "api_unreachable" {
 		prefix = "API unreachable. "
 	}
-	fmt.Fprintf(cmd.ErrOrStderr(), "%s%d results (cached, synced %s)\n", prefix, count, age)
+	_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "%s%d results (cached, synced %s)\n", prefix, count, age)
 }
 
 // unwrapSingleKeyArray flattens single-key collection envelopes

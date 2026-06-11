@@ -5,9 +5,10 @@ package cli
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/config"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 func newAuthCmd(flags *rootFlags) *cobra.Command {
@@ -36,15 +37,15 @@ func newAuthSetupCmd(_ *rootFlags) *cobra.Command {
 		Example: "  notion-pp-cli auth setup\n  notion-pp-cli auth setup --launch",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			w := cmd.OutOrStdout()
-			fmt.Fprintln(w, "No setup URL is configured for this CLI; check the API's docs.")
-			fmt.Fprintln(w, "")
-			fmt.Fprintln(w, "Then set:")
-			fmt.Fprintln(w, "  export NOTION_BEARER_AUTH=\"<your-token>\"")
-			fmt.Fprintln(w, "  notion-pp-cli auth set-token <token>")
+			_, _ = fmt.Fprintln(w, "No setup URL is configured for this CLI; check the API's docs.")
+			_, _ = fmt.Fprintln(w, "")
+			_, _ = fmt.Fprintln(w, "Then set:")
+			_, _ = fmt.Fprintln(w, "  export NOTION_BEARER_AUTH=\"<your-token>\"")
+			_, _ = fmt.Fprintln(w, "  notion-pp-cli auth set-token <token>")
 			if !launch {
 				return nil
 			}
-			fmt.Fprintln(cmd.ErrOrStderr(), "no setup URL configured; cannot launch")
+			_, _ = fmt.Fprintln(cmd.ErrOrStderr(), "no setup URL configured; cannot launch")
 			return nil
 		},
 	}
@@ -85,17 +86,17 @@ func newAuthStatusCmd(flags *rootFlags) *cobra.Command {
 				return nil
 			}
 			if !authed {
-				fmt.Fprintln(w, red("Not authenticated"))
-				fmt.Fprintln(w, "")
-				fmt.Fprintln(w, "Set your token:")
-				fmt.Fprintln(w, "  export NOTION_BEARER_AUTH=\"your-token-here\"")
-				fmt.Fprintf(w, "  notion-pp-cli auth set-token <token>\n")
+				_, _ = fmt.Fprintln(w, red("Not authenticated"))
+				_, _ = fmt.Fprintln(w, "")
+				_, _ = fmt.Fprintln(w, "Set your token:")
+				_, _ = fmt.Fprintln(w, "  export NOTION_BEARER_AUTH=\"your-token-here\"")
+				_, _ = fmt.Fprintf(w, "  notion-pp-cli auth set-token <token>\n")
 				return authErr(fmt.Errorf("no credentials configured"))
 			}
 
-			fmt.Fprintln(w, green("Credentials present (not verified)"))
-			fmt.Fprintf(w, "  Source: %s\n", cfg.AuthSource)
-			fmt.Fprintf(w, "  Config: %s\n", cfg.Path)
+			_, _ = fmt.Fprintln(w, green("Credentials present (not verified)"))
+			_, _ = fmt.Fprintf(w, "  Source: %s\n", cfg.AuthSource)
+			_, _ = fmt.Fprintf(w, "  Config: %s\n", cfg.Path)
 			return nil
 		},
 	}
@@ -131,7 +132,7 @@ func newAuthSetTokenCmd(flags *rootFlags) *cobra.Command {
 					"config_path": cfg.Path,
 				}, flags)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "Token saved to %s\n", cfg.Path)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Token saved to %s\n", cfg.Path)
 			return nil
 		},
 	}
@@ -169,10 +170,10 @@ func newAuthLogoutCmd(flags *rootFlags) *cobra.Command {
 			}
 
 			if envStillSet != "" {
-				fmt.Fprintf(cmd.OutOrStdout(), "Config cleared. Note: %s env var is still set.\n", envStillSet)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Config cleared. Note: %s env var is still set.\n", envStillSet)
 				return nil
 			}
-			fmt.Fprintln(cmd.OutOrStdout(), "Logged out. Credentials cleared.")
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Logged out. Credentials cleared.")
 			return nil
 		},
 	}

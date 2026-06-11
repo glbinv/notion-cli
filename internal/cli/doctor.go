@@ -13,11 +13,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	"notion-pp-cli/internal/client"
 	"notion-pp-cli/internal/cliutil"
 	"notion-pp-cli/internal/config"
 	"notion-pp-cli/internal/store"
+
+	"github.com/spf13/cobra"
 )
 
 // looksLikeDoctorInterstitial reports whether the response body matches a known
@@ -337,17 +338,17 @@ func newDoctorCmd(flags *rootFlags) *cobra.Command {
 				case strings.Contains(s, "not ") || strings.Contains(s, "skipped") || strings.Contains(s, "inferred"):
 					indicator = yellow("WARN")
 				}
-				fmt.Fprintf(w, "  %s %s: %s\n", indicator, ck.label, s)
+				_, _ = fmt.Fprintf(w, "  %s %s: %s\n", indicator, ck.label, s)
 			}
 			// Print info keys without status indicator
 			for _, key := range []string{"config_path", "base_url", "auth_source", "version"} {
 				if v, ok := report[key]; ok {
-					fmt.Fprintf(w, "  %s: %v\n", key, v)
+					_, _ = fmt.Fprintf(w, "  %s: %v\n", key, v)
 				}
 			}
 			// Print auth setup hints (indented under Auth line)
 			if hint, ok := report["auth_hint"]; ok {
-				fmt.Fprintf(w, "  hint: %v\n", hint)
+				_, _ = fmt.Fprintf(w, "  hint: %v\n", hint)
 			}
 			// Cache section: render after the primary health block so it
 			// sits next to version info, mirroring the JSON report layout.
@@ -435,7 +436,7 @@ func collectCacheReport(ctx context.Context, staleAfterSpec string) map[string]a
 		report["error"] = err.Error()
 		return report
 	}
-	defer s.Close()
+	defer func() { _ = s.Close() }()
 
 	if v, verr := s.SchemaVersion(); verr == nil {
 		report["schema_version"] = v
@@ -456,7 +457,7 @@ func collectCacheReport(ctx context.Context, staleAfterSpec string) map[string]a
 		report["hint"] = "No sync state recorded; run 'notion-pp-cli sync' to populate."
 		return report
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var resources []map[string]any
 	fresh := true
@@ -515,34 +516,34 @@ func renderCacheReport(w io.Writer, rep map[string]any) {
 	case "unknown":
 		indicator = yellow("INFO")
 	}
-	fmt.Fprintf(w, "  %s Cache: %s\n", indicator, status)
+	_, _ = fmt.Fprintf(w, "  %s Cache: %s\n", indicator, status)
 	if v, ok := rep["db_path"]; ok {
-		fmt.Fprintf(w, "    db_path: %v\n", v)
+		_, _ = fmt.Fprintf(w, "    db_path: %v\n", v)
 	}
 	if v, ok := rep["schema_version"]; ok {
-		fmt.Fprintf(w, "    schema_version: %v\n", v)
+		_, _ = fmt.Fprintf(w, "    schema_version: %v\n", v)
 	}
 	if v, ok := rep["db_bytes"]; ok {
-		fmt.Fprintf(w, "    db_bytes: %v\n", v)
+		_, _ = fmt.Fprintf(w, "    db_bytes: %v\n", v)
 	}
 	if v, ok := rep["stale_after"]; ok {
-		fmt.Fprintf(w, "    stale_after: %v\n", v)
+		_, _ = fmt.Fprintf(w, "    stale_after: %v\n", v)
 	}
 	if v, ok := rep["oldest_age"]; ok {
-		fmt.Fprintf(w, "    oldest_age: %v\n", v)
+		_, _ = fmt.Fprintf(w, "    oldest_age: %v\n", v)
 	}
 	if resourcesAny, ok := rep["resources"]; ok {
 		if resources, ok := resourcesAny.([]map[string]any); ok && len(resources) > 0 {
-			fmt.Fprintf(w, "    resources:\n")
+			_, _ = fmt.Fprintf(w, "    resources:\n")
 			for _, r := range resources {
 				rtype, _ := r["type"].(string)
 				rows := r["rows"]
 				staleness, _ := r["staleness"].(string)
-				fmt.Fprintf(w, "      - %s: %v rows, %s\n", rtype, rows, staleness)
+				_, _ = fmt.Fprintf(w, "      - %s: %v rows, %s\n", rtype, rows, staleness)
 			}
 		}
 	}
 	if hint, ok := rep["hint"]; ok {
-		fmt.Fprintf(w, "    hint: %v\n", hint)
+		_, _ = fmt.Fprintf(w, "    hint: %v\n", hint)
 	}
 }

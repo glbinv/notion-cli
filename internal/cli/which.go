@@ -213,9 +213,9 @@ func renderWhich(cmd *cobra.Command, flags *rootFlags, matches []whichMatch) err
 		}
 		return printJSONFiltered(w, map[string]any{"matches": matches}, flags)
 	}
-	fmt.Fprintf(w, "%-24s  %-8s  %s\n", "COMMAND", "SCORE", "DESCRIPTION")
+	_, _ = fmt.Fprintf(w, "%-24s  %-8s  %s\n", "COMMAND", "SCORE", "DESCRIPTION")
 	for _, m := range matches {
-		fmt.Fprintf(w, "%-24s  %-8d  %s\n", m.Entry.Command, m.Score, m.Entry.Description)
+		_, _ = fmt.Fprintf(w, "%-24s  %-8d  %s\n", m.Entry.Command, m.Score, m.Entry.Description)
 	}
 	return nil
 }

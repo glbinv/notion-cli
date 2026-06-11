@@ -206,7 +206,7 @@ present (other than --profile and --config).`,
 			if flags.asJSON {
 				return printJSONFiltered(cmd.OutOrStdout(), s.Profiles[name], flags)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "saved profile %q with %d values\n", name, len(values))
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "saved profile %q with %d values\n", name, len(values))
 			return nil
 		},
 	}
@@ -232,9 +232,9 @@ func newProfileUseCmd(flags *rootFlags) *cobra.Command {
 			if flags.asJSON {
 				return printJSONFiltered(cmd.OutOrStdout(), p, flags)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "profile %q:\n", p.Name)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "profile %q:\n", p.Name)
 			if p.Description != "" {
-				fmt.Fprintf(cmd.OutOrStdout(), "  description: %s\n", p.Description)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  description: %s\n", p.Description)
 			}
 			keys := make([]string, 0, len(p.Values))
 			for k := range p.Values {
@@ -242,7 +242,7 @@ func newProfileUseCmd(flags *rootFlags) *cobra.Command {
 			}
 			sort.Strings(keys)
 			for _, k := range keys {
-				fmt.Fprintf(cmd.OutOrStdout(), "  --%s %s\n", k, p.Values[k])
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  --%s %s\n", k, p.Values[k])
 			}
 			return nil
 		},
@@ -325,7 +325,7 @@ func newProfileDeleteCmd(flags *rootFlags) *cobra.Command {
 				return fmt.Errorf("profile %q not found", name)
 			}
 			if !flags.yes {
-				fmt.Fprintf(cmd.ErrOrStderr(), "refusing to delete %q without --yes\n", name)
+				_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "refusing to delete %q without --yes\n", name)
 				return fmt.Errorf("confirmation required: pass --yes")
 			}
 			delete(s.Profiles, name)
@@ -338,7 +338,7 @@ func newProfileDeleteCmd(flags *rootFlags) *cobra.Command {
 					"deleted": name,
 				}, flags)
 			}
-			fmt.Fprintf(cmd.OutOrStdout(), "deleted profile %q\n", name)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "deleted profile %q\n", name)
 			return nil
 		},
 	}

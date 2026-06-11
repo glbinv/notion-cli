@@ -180,7 +180,7 @@ func FanoutRun[S, T any](
 // — the warning surface is the whole reason for the helper.
 func FanoutReportErrors(w io.Writer, errs []FanoutError) {
 	for _, e := range errs {
-		fmt.Fprintf(w, "warn: %s: %s\n", e.Source, shortFanoutErr(e.Err))
+		_, _ = fmt.Fprintf(w, "warn: %s: %s\n", e.Source, shortFanoutErr(e.Err))
 	}
 }
 
