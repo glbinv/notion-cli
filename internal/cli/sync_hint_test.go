@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"notion-pp-cli/internal/store"
+	"github.com/glbinv/notion-cli/internal/store"
 
 	"github.com/spf13/cobra"
 )

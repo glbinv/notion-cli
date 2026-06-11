@@ -10,9 +10,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"notion-pp-cli/internal/client"
-	"notion-pp-cli/internal/cliutil"
-	"notion-pp-cli/internal/store"
 	"os"
 	"regexp"
 	"strconv"
@@ -20,6 +17,10 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/glbinv/notion-cli/internal/client"
+	"github.com/glbinv/notion-cli/internal/cliutil"
+	"github.com/glbinv/notion-cli/internal/store"
 
 	"github.com/spf13/cobra"
 )
@@ -343,7 +344,7 @@ Resource scoping:
 	cmd.Flags().BoolVar(&full, "full", false, "Full resync (ignore previous checkpoint)")
 	cmd.Flags().StringVar(&since, "since", "", "Incremental sync duration (e.g. 7d, 24h, 1w, 30m)")
 	cmd.Flags().IntVar(&concurrency, "concurrency", 4, "Number of parallel sync workers")
-	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/notion-pp-cli/data.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Database path (default: ~/.local/share/github.com/glbinv/notion-cli/data.db)")
 	cmd.Flags().IntVar(&maxPages, "max-pages", 100, "Maximum pages to fetch per resource (0 = unlimited; cap-hit emits a sync_warning event)")
 	cmd.Flags().BoolVar(&latestOnly, "latest-only", false, "Refresh head of each resource only; clears resume cursor and caps pages at 1. Mutually exclusive with --since (--since wins).")
 	cmd.Flags().BoolVar(&strict, "strict", false, "Exit non-zero on any per-resource failure (default: only critical failures or all-resource failure exit non-zero).")

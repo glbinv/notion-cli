@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"notion-pp-cli/internal/config"
+	"github.com/glbinv/notion-cli/internal/config"
 )
 
 // recordingRoundTripper counts how many times its RoundTrip method is

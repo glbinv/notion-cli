@@ -15,12 +15,12 @@ import (
 	"strings"
 	"time"
 
-	"notion-pp-cli/internal/cli"
-	"notion-pp-cli/internal/client"
-	"notion-pp-cli/internal/cliutil"
-	"notion-pp-cli/internal/config"
-	"notion-pp-cli/internal/mcp/cobratree"
-	"notion-pp-cli/internal/store"
+	"github.com/glbinv/notion-cli/internal/cli"
+	"github.com/glbinv/notion-cli/internal/client"
+	"github.com/glbinv/notion-cli/internal/cliutil"
+	"github.com/glbinv/notion-cli/internal/config"
+	"github.com/glbinv/notion-cli/internal/mcp/cobratree"
+	"github.com/glbinv/notion-cli/internal/store"
 
 	mcplib "github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"

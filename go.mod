@@ -1,4 +1,4 @@
-module notion-pp-cli
+module github.com/glbinv/notion-cli
 
 go 1.26.3
 

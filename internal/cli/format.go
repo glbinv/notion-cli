@@ -15,7 +15,7 @@ import (
 	"os"
 	"strings"
 
-	"notion-pp-cli/internal/notionmd"
+	"github.com/glbinv/notion-cli/internal/notionmd"
 
 	"github.com/spf13/cobra"
 )

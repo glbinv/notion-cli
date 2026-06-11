@@ -13,10 +13,10 @@ import (
 	"strings"
 	"time"
 
-	"notion-pp-cli/internal/client"
-	"notion-pp-cli/internal/cliutil"
-	"notion-pp-cli/internal/config"
-	"notion-pp-cli/internal/store"
+	"github.com/glbinv/notion-cli/internal/client"
+	"github.com/glbinv/notion-cli/internal/cliutil"
+	"github.com/glbinv/notion-cli/internal/config"
+	"github.com/glbinv/notion-cli/internal/store"
 
 	"github.com/spf13/cobra"
 )

@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	mcptools "notion-pp-cli/internal/mcp"
+	mcptools "github.com/glbinv/notion-cli/internal/mcp"
 
 	"github.com/mark3labs/mcp-go/server"
 )

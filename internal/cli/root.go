@@ -12,8 +12,8 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"notion-pp-cli/internal/client"
-	"notion-pp-cli/internal/config"
+	"github.com/glbinv/notion-cli/internal/client"
+	"github.com/glbinv/notion-cli/internal/config"
 
 	"github.com/spf13/cobra"
 )

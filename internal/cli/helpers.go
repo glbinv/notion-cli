@@ -11,8 +11,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"notion-pp-cli/internal/client"
-	"notion-pp-cli/internal/cliutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -22,6 +20,9 @@ import (
 	"text/tabwriter"
 	"time"
 	"unicode"
+
+	"github.com/glbinv/notion-cli/internal/client"
+	"github.com/glbinv/notion-cli/internal/cliutil"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"

@@ -5,8 +5,9 @@ package cli
 
 import (
 	"fmt"
-	"notion-pp-cli/internal/config"
 	"os"
+
+	"github.com/glbinv/notion-cli/internal/config"
 
 	"github.com/spf13/cobra"
 )

@@ -17,8 +17,8 @@ import (
 	"strings"
 	"time"
 
-	"notion-pp-cli/internal/client"
-	"notion-pp-cli/internal/store"
+	"github.com/glbinv/notion-cli/internal/client"
+	"github.com/glbinv/notion-cli/internal/store"
 )
 
 // isNetworkError returns true for errors caused by network connectivity issues

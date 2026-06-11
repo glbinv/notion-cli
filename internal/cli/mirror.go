@@ -114,7 +114,7 @@ func newFormatMirrorCmd(flags *rootFlags) *cobra.Command {
 			})
 		},
 	}
-	cmd.Flags().StringVar(&dbPath, "db", "", "Mirror database path (default ~/.local/share/notion-pp-cli/mirror.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Mirror database path (default ~/.local/share/github.com/glbinv/notion-cli/mirror.db)")
 	return cmd
 }
 
@@ -304,7 +304,7 @@ blocks, rich_text. Views: colored_text, block_palette.`, "\n"),
 			return runSQL(cmd, flags, db, strings.Join(args, " "))
 		},
 	}
-	cmd.Flags().StringVar(&dbPath, "db", "", "Mirror database path (default ~/.local/share/notion-pp-cli/mirror.db)")
+	cmd.Flags().StringVar(&dbPath, "db", "", "Mirror database path (default ~/.local/share/github.com/glbinv/notion-cli/mirror.db)")
 	cmd.Flags().BoolVar(&schema, "schema", false, "List mirror tables and views")
 	return cmd
 }

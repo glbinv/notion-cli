@@ -25,8 +25,8 @@ import (
 	enetxhttp "github.com/enetx/http"
 	"github.com/enetx/surf"
 
-	"notion-pp-cli/internal/cliutil"
-	"notion-pp-cli/internal/config"
+	"github.com/glbinv/notion-cli/internal/cliutil"
+	"github.com/glbinv/notion-cli/internal/config"
 )
 
 const BinaryResponseHeader = "X-Printing-Press-Binary-Response"

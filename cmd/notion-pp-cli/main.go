@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"notion-pp-cli/internal/cli"
+	"github.com/glbinv/notion-cli/internal/cli"
 )
 
 func main() {
