@@ -1,0 +1,741 @@
+{
+  "name": "notion",
+  "description": "Combined CLI for multiple API services",
+  "version": "1.0.0",
+  "base_url": "https://api.notion.com",
+  "owner": "user",
+  "owner_name": "user",
+  "spec_source": "community",
+  "category": "productivity",
+  "auth": {
+    "type": "bearer_token",
+    "header": "Authorization",
+    "format": "",
+    "env_vars": [
+      "NOTION_BEARER_AUTH"
+    ],
+    "env_var_specs": [
+      {
+        "name": "NOTION_BEARER_AUTH",
+        "kind": "per_call",
+        "required": true,
+        "sensitive": true,
+        "inferred": true
+      }
+    ],
+    "scheme": "bearerAuth"
+  },
+  "config": {
+    "format": "toml",
+    "path": "~/.config/notion-pp-cli/config.toml"
+  },
+  "resources": {
+    "blocks": {
+      "description": "Manage blocks",
+      "endpoints": {
+        "delete": {
+          "method": "DELETE",
+          "path": "/v1/blocks/{block_id}",
+          "description": "Delete a block using its ID.",
+          "params": [
+            {
+              "name": "block_id",
+              "type": "string",
+              "required": true,
+              "positional": true,
+              "path_param": true,
+              "default": null,
+              "description": "The ID of the block to delete.",
+              "fields": null
+            }
+          ],
+          "body": [],
+          "response": {
+            "type": "object",
+            "item": "BlockResponse"
+          },
+          "tags": [
+            "Blocks"
+          ],
+          "pagination": null,
+          "id_field": "id"
+        },
+        "retrieve": {
+          "method": "GET",
+          "path": "/v1/blocks/{block_id}",
+          "description": "Retrieve a block object using its ID.",
+          "params": [
+            {
+              "name": "block_id",
+              "type": "string",
+              "required": true,
+              "positional": true,
+              "path_param": true,
+              "default": null,
+              "description": "The ID of the block to retrieve.",
+              "fields": null
+            }
+          ],
+          "body": [],
+          "response": {
+            "type": "object",
+            "item": "BlockResponse"
+          },
+          "tags": [
+            "Blocks"
+          ],
+          "pagination": null,
+          "id_field": "id"
+        },
+        "update": {
+          "method": "PATCH",
+          "path": "/v1/blocks/{block_id}",
+          "description": "Update a block's properties.",
+          "params": [
+            {
+              "name": "block_id",
+              "type": "string",
+              "required": true,
+              "positional": true,
+              "path_param": true,
+              "default": null,
+              "description": "The ID of the block to update.",
+              "fields": null
+            }
+          ],
+          "body": [
+            {
+              "name": "properties",
+              "type": "object",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "The properties to update for the block.",
+              "fields": null
+            },
+            {
+              "name": "type",
+              "type": "string",
+              "required": true,
+              "positional": false,
+              "default": null,
+              "description": "The type of block (e.g., paragraph, image).",
+              "fields": null
+            }
+          ],
+          "body_required": true,
+          "request_content_type": "application/json",
+          "response": {
+            "type": "object",
+            "item": "BlockResponse"
+          },
+          "tags": [
+            "Blocks"
+          ],
+          "pagination": null,
+          "id_field": "id"
+        }
+      }
+    },
+    "children": {
+      "description": "Manage children",
+      "endpoints": {
+        "retrieve-block": {
+          "method": "GET",
+          "path": "/v1/blocks/{block_id}/children",
+          "description": "Retrieve the children of a block.",
+          "params": [
+            {
+              "name": "block_id",
+              "type": "string",
+              "required": true,
+              "positional": true,
+              "path_param": true,
+              "default": null,
+              "description": "The ID of the block whose children are to be retrieved.",
+              "fields": null
+            },
+            {
+              "name": "start_cursor",
+              "type": "string",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "Pagination cursor for fetching the next set of results.",
+              "fields": null
+            },
+            {
+              "name": "page_size",
+              "type": "int",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "The number of results to retrieve per page (default is 100).",
+              "fields": null
+            }
+          ],
+          "body": [],
+          "response": {
+            "type": "object",
+            "item": "BlockChildrenResponse"
+          },
+          "tags": [
+            "Blocks"
+          ],
+          "pagination": {
+            "type": "cursor",
+            "limit_param": "page_size",
+            "cursor_param": "",
+            "next_cursor_path": "",
+            "has_more_field": "has_more"
+          }
+        },
+        "update-block": {
+          "method": "PATCH",
+          "path": "/v1/blocks/{block_id}/children",
+          "description": "Update the children of a block.",
+          "params": [
+            {
+              "name": "block_id",
+              "type": "string",
+              "required": true,
+              "positional": true,
+              "path_param": true,
+              "default": null,
+              "description": "The ID of the block to update.",
+              "fields": null
+            }
+          ],
+          "body": [
+            {
+              "name": "children",
+              "type": "array",
+              "required": true,
+              "positional": false,
+              "default": null,
+              "description": "The list of block children to update.",
+              "fields": null
+            }
+          ],
+          "body_required": true,
+          "request_content_type": "application/json",
+          "response": {
+            "type": "object",
+            "item": "BlockChildrenResponse"
+          },
+          "tags": [
+            "Blocks"
+          ],
+          "pagination": null
+        }
+      }
+    },
+    "notion-search": {
+      "description": "Manage notion search",
+      "endpoints": {
+        "search": {
+          "method": "POST",
+          "path": "/v1/search",
+          "description": "Search for pages, databases, and other objects within a Notion workspace.",
+          "params": [],
+          "body": [
+            {
+              "name": "filter",
+              "type": "object",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "Filter",
+              "fields": [
+                {
+                  "name": "property",
+                  "type": "string",
+                  "required": true,
+                  "positional": false,
+                  "default": null,
+                  "description": "Property",
+                  "fields": null
+                },
+                {
+                  "name": "value",
+                  "type": "string",
+                  "required": true,
+                  "positional": false,
+                  "default": null,
+                  "description": "The type of object to filter by (e.g., `page`, `database`).",
+                  "fields": null
+                }
+              ]
+            },
+            {
+              "name": "page_size",
+              "type": "int",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "Number of results to return per page.",
+              "fields": null
+            },
+            {
+              "name": "query",
+              "type": "string",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "The text to search for.",
+              "fields": null
+            },
+            {
+              "name": "sort",
+              "type": "object",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "Sort",
+              "fields": [
+                {
+                  "name": "direction",
+                  "type": "string",
+                  "required": false,
+                  "positional": false,
+                  "default": null,
+                  "description": "Direction",
+                  "fields": null,
+                  "enum": [
+                    "ascending",
+                    "descending"
+                  ]
+                },
+                {
+                  "name": "timestamp",
+                  "type": "string",
+                  "required": false,
+                  "positional": false,
+                  "default": null,
+                  "description": "Timestamp",
+                  "fields": null,
+                  "enum": [
+                    "last_edited_time"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "start_cursor",
+              "type": "string",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "Pagination cursor for the start of the search results.",
+              "fields": null
+            }
+          ],
+          "body_required": true,
+          "request_content_type": "application/json",
+          "response": {
+            "type": "object",
+            "item": "SearchResponse"
+          },
+          "tags": [
+            "Search"
+          ],
+          "pagination": null
+        }
+      }
+    },
+    "pages": {
+      "description": "Manage pages",
+      "endpoints": {
+        "create": {
+          "method": "POST",
+          "path": "/v1/pages",
+          "description": "Create a new page in a Notion database.",
+          "params": [],
+          "body": [
+            {
+              "name": "children",
+              "type": "array",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "List of block objects for the page content.",
+              "fields": null
+            },
+            {
+              "name": "parent",
+              "type": "object",
+              "required": true,
+              "positional": false,
+              "default": null,
+              "description": "Parent",
+              "fields": [
+                {
+                  "name": "database_id",
+                  "type": "string",
+                  "required": true,
+                  "positional": false,
+                  "default": null,
+                  "description": "The ID of the database where the page should be created.",
+                  "fields": null
+                }
+              ]
+            },
+            {
+              "name": "properties",
+              "type": "object",
+              "required": true,
+              "positional": false,
+              "default": null,
+              "description": "The properties of the page.",
+              "fields": null
+            }
+          ],
+          "body_required": true,
+          "request_content_type": "application/json",
+          "response": {
+            "type": "object",
+            "item": "PageResponse"
+          },
+          "tags": [
+            "Pages"
+          ],
+          "pagination": null,
+          "id_field": "id"
+        },
+        "retrieve": {
+          "method": "GET",
+          "path": "/v1/pages/{page_id}",
+          "description": "Retrieve a page object using the page ID.",
+          "params": [
+            {
+              "name": "page_id",
+              "type": "string",
+              "required": true,
+              "positional": true,
+              "path_param": true,
+              "default": null,
+              "description": "The ID of the page to retrieve.",
+              "fields": null
+            }
+          ],
+          "body": [],
+          "response": {
+            "type": "object",
+            "item": "PageResponse"
+          },
+          "tags": [
+            "Pages"
+          ],
+          "pagination": null,
+          "id_field": "id"
+        },
+        "update": {
+          "method": "PATCH",
+          "path": "/v1/pages/{page_id}",
+          "description": "Update the properties of a specific page by its ID.",
+          "params": [
+            {
+              "name": "page_id",
+              "type": "string",
+              "required": true,
+              "positional": true,
+              "path_param": true,
+              "default": null,
+              "description": "The ID of the page to update.",
+              "fields": null
+            }
+          ],
+          "body": [
+            {
+              "name": "archived",
+              "type": "bool",
+              "required": false,
+              "positional": false,
+              "default": null,
+              "description": "Whether to archive the page.",
+              "fields": null
+            },
+            {
+              "name": "properties",
+              "type": "object",
+              "required": true,
+              "positional": false,
+              "default": null,
+              "description": "The properties to update for the page.",
+              "fields": null
+            }
+          ],
+          "body_required": true,
+          "request_content_type": "application/json",
+          "response": {
+            "type": "object",
+            "item": "PageResponse"
+          },
+          "tags": [
+            "Pages"
+          ],
+          "pagination": null,
+          "id_field": "id"
+        }
+      },
+      "sub_resources": {
+        "properties": {
+          "description": "Manage properties",
+          "endpoints": {
+            "retrieve-page-property": {
+              "method": "GET",
+              "path": "/v1/pages/{page_id}/properties/{property_id}",
+              "description": "Retrieve a page property using the page ID and property ID.",
+              "params": [
+                {
+                  "name": "page_id",
+                  "type": "string",
+                  "required": true,
+                  "positional": true,
+                  "path_param": true,
+                  "default": null,
+                  "description": "The ID of the page.",
+                  "fields": null
+                },
+                {
+                  "name": "property_id",
+                  "type": "string",
+                  "required": true,
+                  "positional": true,
+                  "path_param": true,
+                  "default": null,
+                  "description": "The ID of the property to retrieve.",
+                  "fields": null
+                }
+              ],
+              "body": [],
+              "response": {
+                "type": "object",
+                "item": "PagePropertyResponse"
+              },
+              "tags": [
+                "Page Properties"
+              ],
+              "pagination": null,
+              "id_field": "id"
+            }
+          }
+        }
+      }
+    }
+  },
+  "types": {
+    "BlockChildrenResponse": {
+      "fields": [
+        {
+          "name": "has_more",
+          "type": "bool"
+        },
+        {
+          "name": "next_cursor",
+          "type": "string"
+        },
+        {
+          "name": "object",
+          "type": "string"
+        },
+        {
+          "name": "results",
+          "type": "array"
+        }
+      ]
+    },
+    "BlockResponse": {
+      "fields": [
+        {
+          "name": "archived",
+          "type": "bool"
+        },
+        {
+          "name": "created_time",
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "name": "has_children",
+          "type": "bool"
+        },
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "last_edited_time",
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "name": "object",
+          "type": "string"
+        },
+        {
+          "name": "properties",
+          "type": "object"
+        },
+        {
+          "name": "type",
+          "type": "string"
+        }
+      ]
+    },
+    "CreatePageRequest": {
+      "fields": [
+        {
+          "name": "children",
+          "type": "array"
+        },
+        {
+          "name": "parent",
+          "type": "object"
+        },
+        {
+          "name": "properties",
+          "type": "object"
+        }
+      ]
+    },
+    "PagePropertyResponse": {
+      "fields": [
+        {
+          "name": "has_more",
+          "type": "bool"
+        },
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "next_cursor",
+          "type": "string"
+        },
+        {
+          "name": "object",
+          "type": "string"
+        },
+        {
+          "name": "property",
+          "type": "object"
+        },
+        {
+          "name": "type",
+          "type": "string"
+        }
+      ]
+    },
+    "PageResponse": {
+      "fields": [
+        {
+          "name": "created_time",
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "name": "last_edited_time",
+          "type": "string",
+          "format": "date-time"
+        },
+        {
+          "name": "object",
+          "type": "string"
+        },
+        {
+          "name": "parent",
+          "type": "object"
+        },
+        {
+          "name": "properties",
+          "type": "object"
+        },
+        {
+          "name": "url",
+          "type": "string"
+        }
+      ]
+    },
+    "SearchRequest": {
+      "fields": [
+        {
+          "name": "filter",
+          "type": "object"
+        },
+        {
+          "name": "page_size",
+          "type": "int"
+        },
+        {
+          "name": "query",
+          "type": "string"
+        },
+        {
+          "name": "sort",
+          "type": "object"
+        },
+        {
+          "name": "start_cursor",
+          "type": "string"
+        }
+      ]
+    },
+    "SearchResponse": {
+      "fields": [
+        {
+          "name": "has_more",
+          "type": "bool"
+        },
+        {
+          "name": "next_cursor",
+          "type": "string"
+        },
+        {
+          "name": "results",
+          "type": "array"
+        }
+      ]
+    },
+    "UpdateBlockChildrenRequest": {
+      "fields": [
+        {
+          "name": "children",
+          "type": "array"
+        }
+      ]
+    },
+    "UpdateBlockRequest": {
+      "fields": [
+        {
+          "name": "properties",
+          "type": "object"
+        },
+        {
+          "name": "type",
+          "type": "string"
+        }
+      ]
+    },
+    "UpdatePageRequest": {
+      "fields": [
+        {
+          "name": "archived",
+          "type": "bool"
+        },
+        {
+          "name": "properties",
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "cache": {},
+  "share": {},
+  "mcp": {},
+  "throttling": {}
+}

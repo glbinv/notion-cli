@@ -1,0 +1,486 @@
+{
+  "api_name": "notion",
+  "base_url": "https://api.notion.com",
+  "description": "Combined CLI for multiple API services",
+  "mcp_ready": "full",
+  "http_transport": "browser-chrome-h2",
+  "auth": {
+    "type": "bearer_token",
+    "header": "Authorization",
+    "env_vars": [
+      "NOTION_BEARER_AUTH"
+    ],
+    "env_var_specs": [
+      {
+        "name": "NOTION_BEARER_AUTH",
+        "kind": "per_call",
+        "required": true,
+        "sensitive": true,
+        "inferred": true
+      }
+    ]
+  },
+  "required_headers": [],
+  "tools": [
+    {
+      "name": "blocks_delete",
+      "description": "Delete a block using its ID. Required: block_id. Returns the BlockResponse. Destructive.",
+      "method": "DELETE",
+      "path": "/v1/blocks/{block_id}",
+      "params": [
+        {
+          "name": "block_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the block to delete.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "blocks_retrieve",
+      "description": "Retrieve a block object using its ID. Required: block_id. Returns the BlockResponse.",
+      "method": "GET",
+      "path": "/v1/blocks/{block_id}",
+      "params": [
+        {
+          "name": "block_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the block to retrieve.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "blocks_update",
+      "description": "Update a block's properties. Required: block_id, type. Optional: properties. Returns the updated BlockResponse.",
+      "method": "PATCH",
+      "path": "/v1/blocks/{block_id}",
+      "params": [
+        {
+          "name": "block_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the block to update.",
+          "required": true
+        },
+        {
+          "name": "properties",
+          "type": "object",
+          "location": "body",
+          "description": "The properties to update for the block."
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "description": "The type of block (e.g., paragraph, image).",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "children_retrieve-block",
+      "description": "Retrieve the children of a block. Required: block_id. Optional: start_cursor, page_size. Returns the BlockChildrenResponse.",
+      "method": "GET",
+      "path": "/v1/blocks/{block_id}/children",
+      "params": [
+        {
+          "name": "block_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the block whose children are to be retrieved.",
+          "required": true
+        },
+        {
+          "name": "start_cursor",
+          "type": "string",
+          "location": "query",
+          "description": "Pagination cursor for fetching the next set of results."
+        },
+        {
+          "name": "page_size",
+          "type": "int",
+          "location": "query",
+          "description": "The number of results to retrieve per page (default is 100)."
+        }
+      ]
+    },
+    {
+      "name": "children_update-block",
+      "description": "Update the children of a block. Required: block_id, children. Returns the updated BlockChildrenResponse.",
+      "method": "PATCH",
+      "path": "/v1/blocks/{block_id}/children",
+      "params": [
+        {
+          "name": "block_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the block to update.",
+          "required": true
+        },
+        {
+          "name": "children",
+          "type": "array",
+          "location": "body",
+          "description": "The list of block children to update.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "notion-search_search",
+      "description": "Search for pages, databases, and other objects within a Notion workspace. Optional: filter, page_size, query (plus 2 more). Returns the new SearchResponse.",
+      "method": "POST",
+      "path": "/v1/search",
+      "params": [
+        {
+          "name": "filter",
+          "type": "object",
+          "location": "body",
+          "description": "Filter"
+        },
+        {
+          "name": "page_size",
+          "type": "int",
+          "location": "body",
+          "description": "Number of results to return per page."
+        },
+        {
+          "name": "query",
+          "type": "string",
+          "location": "body",
+          "description": "The text to search for."
+        },
+        {
+          "name": "sort",
+          "type": "object",
+          "location": "body",
+          "description": "Sort"
+        },
+        {
+          "name": "start_cursor",
+          "type": "string",
+          "location": "body",
+          "description": "Pagination cursor for the start of the search results."
+        }
+      ]
+    },
+    {
+      "name": "pages_create",
+      "description": "Create a new page in a Notion database. Required: parent, properties. Optional: children. Returns the new PageResponse.",
+      "method": "POST",
+      "path": "/v1/pages",
+      "params": [
+        {
+          "name": "children",
+          "type": "array",
+          "location": "body",
+          "description": "List of block objects for the page content."
+        },
+        {
+          "name": "parent",
+          "type": "object",
+          "location": "body",
+          "description": "Parent",
+          "required": true
+        },
+        {
+          "name": "properties",
+          "type": "object",
+          "location": "body",
+          "description": "The properties of the page.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "pages_retrieve",
+      "description": "Retrieve a page object using the page ID. Required: page_id. Returns the PageResponse.",
+      "method": "GET",
+      "path": "/v1/pages/{page_id}",
+      "params": [
+        {
+          "name": "page_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the page to retrieve.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "pages_update",
+      "description": "Update the properties of a specific page by its ID. Required: page_id, properties. Optional: archived. Returns the updated PageResponse.",
+      "method": "PATCH",
+      "path": "/v1/pages/{page_id}",
+      "params": [
+        {
+          "name": "page_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the page to update.",
+          "required": true
+        },
+        {
+          "name": "archived",
+          "type": "bool",
+          "location": "body",
+          "description": "Whether to archive the page."
+        },
+        {
+          "name": "properties",
+          "type": "object",
+          "location": "body",
+          "description": "The properties to update for the page.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "pages_properties_retrieve-page-property",
+      "description": "Retrieve a page property using the page ID and property ID. Required: page_id, property_id. Returns the PagePropertyResponse.",
+      "method": "GET",
+      "path": "/v1/pages/{page_id}/properties/{property_id}",
+      "params": [
+        {
+          "name": "page_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the page.",
+          "required": true
+        },
+        {
+          "name": "property_id",
+          "type": "string",
+          "location": "path",
+          "description": "The ID of the property to retrieve.",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "search",
+      "kind": "framework",
+      "description": "Full-text search across all synced data (SQLite FTS5). Faster than paginating list endpoints. Requires sync first.",
+      "params": [
+        { "name": "query", "type": "string", "description": "Search query (FTS5 syntax).", "required": true },
+        { "name": "limit", "type": "int", "description": "Max results (default 25)." }
+      ]
+    },
+    {
+      "name": "sql",
+      "kind": "framework",
+      "description": "Run read-only SQL against the local database. Ad-hoc analysis, aggregations, and joins across synced resources. Requires sync first.",
+      "params": [
+        { "name": "query", "type": "string", "description": "SQL query (SELECT or WITH...SELECT).", "required": true }
+      ]
+    },
+    {
+      "name": "context",
+      "kind": "framework",
+      "description": "Get API domain context: resource taxonomy, auth requirements, query tips, and unique capabilities. Call this first.",
+      "params": []
+    },
+    {
+      "name": "format-write-page",
+      "kind": "command",
+      "command": "format write-page",
+      "description": "Render an extended-markdown document to a Notion page, preserving block-level color and per-run annotation fidelity the official Notion MCP drops. Wraps internal/notionmd.",
+      "params": [
+        { "name": "page_id", "type": "string", "description": "Target page ID.", "required": true },
+        { "name": "md", "type": "string", "description": "Inline extended-markdown source." },
+        { "name": "from-markdown", "type": "string", "description": "Path to an extended-markdown file." },
+        { "name": "mode", "type": "string", "description": "append (default) or replace." }
+      ]
+    },
+    {
+      "name": "format-update-block",
+      "kind": "command",
+      "command": "format update",
+      "description": "Re-style an existing block's formatting in place (color, annotations, callout icon, to_do checked) without retyping text. Wraps internal/notionmd.",
+      "params": [
+        { "name": "block_id", "type": "string", "description": "Target block ID.", "required": true },
+        { "name": "color", "type": "string", "description": "Block-level color." },
+        { "name": "recolor", "type": "string", "description": "Set annotations.color on every run." },
+        { "name": "set", "type": "string", "description": "Enable annotations: bold,italic,underline,strike,code." },
+        { "name": "unset", "type": "string", "description": "Disable annotations." },
+        { "name": "icon", "type": "string", "description": "Callout icon (emoji or shortcode)." },
+        { "name": "md", "type": "string", "description": "Replace rich text from extended markdown." },
+        { "name": "check", "type": "bool", "description": "Mark a to_do checked." },
+        { "name": "uncheck", "type": "bool", "description": "Mark a to_do unchecked." }
+      ]
+    },
+    {
+      "name": "format-read-page",
+      "kind": "command",
+      "command": "format read-page",
+      "description": "Read a page's block tree and render it back to extended markdown (inverse of format-write-page), round-tripping color and annotations. Wraps internal/notionmd.",
+      "params": [
+        { "name": "page_id", "type": "string", "description": "Page ID to read.", "required": true }
+      ]
+    },
+    {
+      "name": "sync-database",
+      "kind": "command",
+      "command": "sync",
+      "description": "Sync Notion API data into the local SQLite store for offline search and analysis. No remote mutation. Wraps internal/store.",
+      "params": [
+        { "name": "resources", "type": "string", "description": "Comma-separated resource types (default: all)." },
+        { "name": "full", "type": "bool", "description": "Full resync." },
+        { "name": "since", "type": "string", "description": "Incremental window (e.g. 7d, 24h, 1w)." }
+      ]
+    },
+    {
+      "name": "sync-page",
+      "kind": "command",
+      "command": "format mirror",
+      "description": "Mirror one page's full block tree into local SQLite with per-run color/annotation columns so format sql can query formatting. No remote mutation. Wraps internal/store.",
+      "params": [
+        { "name": "page_id", "type": "string", "description": "Page ID to mirror.", "required": true }
+      ]
+    },
+    {
+      "name": "search-local",
+      "kind": "command",
+      "command": "search --data-source local",
+      "description": "Full-text search against the local SQLite mirror (FTS5), offline. Run sync-database first.",
+      "params": [
+        { "name": "query", "type": "string", "description": "Search query (FTS5 syntax).", "required": true },
+        { "name": "limit", "type": "int", "description": "Max results." }
+      ]
+    },
+    {
+      "name": "workflow-run",
+      "kind": "command",
+      "command": "workflow archive",
+      "description": "Run the compound archive workflow: fetch all syncable resources into the local SQLite store. No remote mutation.",
+      "params": [
+        { "name": "full", "type": "bool", "description": "Full re-archive." }
+      ]
+    },
+    {
+      "name": "databases-create",
+      "kind": "rest",
+      "description": "Create a database under a parent page. Required: parent, properties. Optional: title.",
+      "method": "POST",
+      "path": "/v1/databases",
+      "params": [
+        { "name": "parent", "type": "object", "location": "body", "description": "Parent reference.", "required": true },
+        { "name": "title", "type": "array", "location": "body", "description": "Database title rich-text." },
+        { "name": "properties", "type": "object", "location": "body", "description": "Property schema.", "required": true }
+      ]
+    },
+    {
+      "name": "databases-retrieve",
+      "kind": "rest",
+      "description": "Retrieve a database's metadata and property schema. Required: database_id.",
+      "method": "GET",
+      "path": "/v1/databases/{database_id}",
+      "params": [
+        { "name": "database_id", "type": "string", "location": "path", "description": "The ID of the database.", "required": true }
+      ]
+    },
+    {
+      "name": "databases-update",
+      "kind": "rest",
+      "description": "Update a database's title, description, or property schema. Required: database_id.",
+      "method": "PATCH",
+      "path": "/v1/databases/{database_id}",
+      "params": [
+        { "name": "database_id", "type": "string", "location": "path", "description": "The ID of the database.", "required": true },
+        { "name": "title", "type": "array", "location": "body", "description": "New title rich-text." },
+        { "name": "description", "type": "array", "location": "body", "description": "New description rich-text." },
+        { "name": "properties", "type": "object", "location": "body", "description": "Property-schema changes." }
+      ]
+    },
+    {
+      "name": "databases-query",
+      "kind": "rest",
+      "description": "Query a database's rows with optional filter and sorts. Required: database_id.",
+      "method": "POST",
+      "path": "/v1/databases/{database_id}/query",
+      "params": [
+        { "name": "database_id", "type": "string", "location": "path", "description": "The ID of the database.", "required": true },
+        { "name": "filter", "type": "object", "location": "body", "description": "Notion filter object." },
+        { "name": "sorts", "type": "array", "location": "body", "description": "Sort array." },
+        { "name": "start_cursor", "type": "string", "location": "body", "description": "Pagination cursor." },
+        { "name": "page_size", "type": "int", "location": "body", "description": "Results per page (max 100)." }
+      ]
+    },
+    {
+      "name": "comments-list",
+      "kind": "rest",
+      "description": "List unresolved comments on a block or page. Required: block_id.",
+      "method": "GET",
+      "path": "/v1/comments",
+      "params": [
+        { "name": "block_id", "type": "string", "location": "query", "description": "Block or page ID.", "required": true },
+        { "name": "start_cursor", "type": "string", "location": "query", "description": "Pagination cursor." },
+        { "name": "page_size", "type": "int", "location": "query", "description": "Results per page." }
+      ]
+    },
+    {
+      "name": "comments-create",
+      "kind": "rest",
+      "description": "Create a comment. Provide rich_text plus parent (new thread) or discussion_id (reply).",
+      "method": "POST",
+      "path": "/v1/comments",
+      "params": [
+        { "name": "parent", "type": "object", "location": "body", "description": "Parent reference to start a thread." },
+        { "name": "discussion_id", "type": "string", "location": "body", "description": "Existing discussion to reply to." },
+        { "name": "rich_text", "type": "array", "location": "body", "description": "Comment body rich-text.", "required": true }
+      ]
+    },
+    {
+      "name": "users-list",
+      "kind": "rest",
+      "description": "List all users in the workspace.",
+      "method": "GET",
+      "path": "/v1/users",
+      "params": [
+        { "name": "start_cursor", "type": "string", "location": "query", "description": "Pagination cursor." },
+        { "name": "page_size", "type": "int", "location": "query", "description": "Results per page." }
+      ]
+    },
+    {
+      "name": "users-retrieve",
+      "kind": "rest",
+      "description": "Retrieve a user by ID. Required: user_id.",
+      "method": "GET",
+      "path": "/v1/users/{user_id}",
+      "params": [
+        { "name": "user_id", "type": "string", "location": "path", "description": "The ID of the user.", "required": true }
+      ]
+    },
+    {
+      "name": "users-me",
+      "kind": "rest",
+      "description": "Retrieve the bot user associated with the current integration token.",
+      "method": "GET",
+      "path": "/v1/users/me",
+      "params": []
+    },
+    {
+      "name": "pages-move",
+      "kind": "rest",
+      "description": "Move a page to a new parent (page or database) by updating its parent reference. Required: page_id, parent.",
+      "method": "PATCH",
+      "path": "/v1/pages/{page_id}",
+      "params": [
+        { "name": "page_id", "type": "string", "location": "path", "description": "The ID of the page to move.", "required": true },
+        { "name": "parent", "type": "object", "location": "body", "description": "New parent reference.", "required": true }
+      ]
+    },
+    {
+      "name": "pages-duplicate",
+      "kind": "compound",
+      "description": "Duplicate a page: copies its properties and full block tree into a new page (Notion has no single duplicate endpoint). Required: page_id. Optional: parent.",
+      "params": [
+        { "name": "page_id", "type": "string", "description": "The ID of the page to duplicate.", "required": true },
+        { "name": "parent", "type": "object", "description": "Target parent; defaults to the source's parent." }
+      ]
+    }
+  ]
+}

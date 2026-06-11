@@ -1,0 +1,24 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Editor / agent local state
+.claude/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Go build output
+bin/
+dist/
+*.exe
+*.test
+*.out
+coverage.*
+*.prof
+
+# Generator / dev artifacts
+dogfood-results.json
+workflow-verify-report.json
