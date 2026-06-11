@@ -39,13 +39,3 @@ archives:
         formats: [zip]
 checksum:
   name_template: checksums.txt
-brews:
-  - name: notion-pp-cli
-    repository:
-      owner: glbinv
-      name: homebrew-tap
-    homepage: "https://github.com/glbinv/notion-cli"
-    description: "Go CLI + MCP server for the Notion API"
-    install: |
-      bin.install "notion-pp-cli"
-      bin.install "notion-pp-mcp"
