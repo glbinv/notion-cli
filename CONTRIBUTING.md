@@ -13,11 +13,23 @@ Thanks for your interest in `notion-cli`. A few things to know before you open a
 
 ## Local dev
 
+First-time setup (per clone):
+
+```bash
+make tools          # install golangci-lint v2 (built with your local Go)
+make hooks          # enable the pre-push hook (runs `make check` before every push)
+```
+
+Everyday commands:
+
 ```bash
 make build-all      # builds ./bin/notion-pp-cli and ./bin/notion-pp-mcp
 make test           # go test ./...
-make lint           # requires golangci-lint
+make lint           # golangci-lint run
+make check          # everything CI runs: vet + test + lint + build — run this before pushing
 ```
+
+`make check` mirrors the GitHub CI jobs exactly, so a green `make check` locally means a green CI. The pre-push hook runs it automatically; bypass with `git push --no-verify` only in an emergency.
 
 Smoke test against a real Notion workspace:
 

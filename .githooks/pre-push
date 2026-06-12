@@ -1,0 +1,20 @@
+#!/bin/sh
+# Pre-push hook: run the same checks CI runs and block the push if any fail.
+#
+# This hook is version-controlled (lives in .githooks/, committed to the repo).
+# Git does NOT use it automatically — enable it once per clone with:
+#
+#     make hooks        # sets core.hooksPath=.githooks
+#
+# To bypass in an emergency: git push --no-verify  (not recommended)
+
+echo "→ pre-push: running 'make check' (vet, test, lint, build)…"
+
+if ! make check; then
+	echo
+	echo "✗ pre-push checks failed — push aborted."
+	echo "  Fix the issues above, or bypass with 'git push --no-verify' (not recommended)."
+	exit 1
+fi
+
+echo "✓ pre-push checks passed."
